@@ -1,20 +1,40 @@
+## Documentation: http://docs.travis-ci.com/user/languages/julia/
 language: julia
-sudo: false
+
+julia:
+  - 0.6
+  - 0.7
+  - 1.0
+  - nightly
 
 os:
   #- linux
   - osx
 
-julia:
-  - 0.6
-  - nightly
-matrix:
- allow_failures:
- - julia: nightly
-
 notifications:
   email: false
 
+git:
+  depth: 99999999
+
+# uncomment the following lines to allow failures on nightly julia
+# (tests will run but not make your overall status red)
+matrix:
+  allow_failures:
+  - julia: 0.7
+  - julia: 1.0
+  - julia: nightly
+
+
+# uncomment and modify the following lines to manually install system packages
+#addons:
+#  apt: # apt-get for linux
+#    packages:
+#    -
+#before_script:
+#  - if [ $TRAVIS_OS_NAME = linux ]; then ls; fi
+#before_script: # homebrew for mac
+#  - if [ $TRAVIS_OS_NAME = osx ]; then brew install gcc; fi
 # before_install:
 #   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 #   - if [ $TRAVIS_OS_NAME = "linux" ]; then
@@ -29,11 +49,14 @@ notifications:
 #       chmod +x ${AMDAPPSDK}/bin/x86_64/clinfo;
 #       ${AMDAPPSDK}/bin/x86_64/clinfo;
 #     fi;
+
+# uncomment the following lines to override the default test script
 script:
-  - julia -e 'Pkg.init(); Pkg.clone(pwd())'
+  - julia --color=yes -e 'if VERSION >= v"0.7.0-" using Pkg; end; Pkg.clone(pwd()); Pkg.build("OpenCL")'
   - julia -e 'using OpenCL'
 
-  - julia --color=yes --depwarn=error -e "Pkg.test(\"OpenCL\")"
+  - julia --check-bounds=yes --color=yes -e 'if VERSION >= v"0.7.0-" using Pkg; end; Pkg.test("OpenCL")'
+  #- julia --check-bounds=yes --color=yes --depwarn=error -e 'if VERSION >= v"0.7.0-" using Pkg; end; Pkg.test("OpenCL")'
 
   - julia examples/demo.jl
   - julia examples/performance.jl
@@ -57,4 +80,4 @@ script:
   #   fi;
 
 after_success:
-  - julia -e 'Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
+  - julia -e 'if VERSION >= v"0.7.0-" using Pkg; end; Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
