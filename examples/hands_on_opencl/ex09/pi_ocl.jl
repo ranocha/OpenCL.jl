@@ -12,6 +12,14 @@
 
 using OpenCL
 
+function readstring(filename::String)
+  kernel_source = ""
+  open(filename, "r") do io
+    kernel_source = read(io, String)
+  end
+  kernel_source
+end
+
 # get the directory of this file
 # (used for test runner)
 src_dir = dirname(Base.source_path())
@@ -55,7 +63,7 @@ nsteps = work_group_size * niters * nwork_groups
 step_size = 1.0 / nsteps
 
 # vector to hold partial sum
-h_psum = Vector{Float32}(nwork_groups)
+h_psum = Vector{Float32}(undef, nwork_groups)
 
 println("$nwork_groups work groups of size $work_group_size.")
 println("$nsteps integration steps")

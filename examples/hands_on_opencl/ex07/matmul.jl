@@ -43,6 +43,14 @@ COUNT = 1
 # Helper functions
 include("helper.jl")
 
+function readstring(filename::String)
+  kernel_source = ""
+  open(filename, "r") do io
+    kernel_source = read(io, String)
+  end
+  kernel_source
+end
+
 # A[N,P], B[P M], C[N,M]
 Ndim = ORDER
 Pdim = ORDER
@@ -56,7 +64,7 @@ sizeC = Ndim * Mdim
 # Number of elements in the matrix
 h_A = fill(Float32(AVAL), sizeA)
 h_B = fill(Float32(BVAL), sizeB)
-h_C = Vector{Float32}(sizeC)
+h_C = Vector{Float32}(undef, sizeC)
 
 # %20 improvment using @inbounds
 function seq_mat_mul_sdot(Mdim::Int, Ndim::Int, Pdim::Int,
@@ -72,7 +80,7 @@ function seq_mat_mul_sdot(Mdim::Int, Ndim::Int, Pdim::Int,
     end
 end
 
-info("=== Julia, matix mult (dot prod), order $ORDER ===")
+@info("=== Julia, matix mult (dot prod), order $ORDER ===")
 
 # force compilation
 seq_mat_mul_sdot(Mdim, Ndim, Pdim, h_A, h_B, h_C)
@@ -105,7 +113,7 @@ kernel_source = readstring(joinpath(src_dir, "C_elem.cl"))
 prg  = cl.Program(ctx, source=kernel_source) |> cl.build!
 mmul = cl.Kernel(prg, "mmul")
 
-info("=== OpenCL, matrix mult, C(i, j) per work item, order $Ndim ====")
+@info("=== OpenCL, matrix mult, C(i, j) per work item, order $Ndim ====")
 
 for i in 1:COUNT
     fill!(h_C, 0.0)
@@ -126,7 +134,7 @@ kernel_source = readstring(joinpath(src_dir, "C_row.cl"))
 prg  = cl.Program(ctx, source=kernel_source) |> cl.build!
 mmul = cl.Kernel(prg, "mmul")
 
-info("=== OpenCL, matrix mult, C row per work item, order $Ndim ====")
+@info("=== OpenCL, matrix mult, C row per work item, order $Ndim ====")
 
 for i in 1:COUNT
     fill!(h_C, 0.0)
@@ -151,7 +159,7 @@ if Ndim * (ORDER ÷ 16) >= wk_size
     @warn("Specified work_size is bigger than $wk_size")
 else
 
-info("=== OpenCL, matrix mult, C row, A row in priv mem, order $Ndim ====")
+@info("=== OpenCL, matrix mult, C row, A row in priv mem, order $Ndim ====")
 
 for i in 1:COUNT
     fill!(h_C, 0.0)

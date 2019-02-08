@@ -12,6 +12,14 @@
 
 using OpenCL
 
+function readstring(filename::String)
+  kernel_source = ""
+  open(filename, "r") do io
+    kernel_source = read(io, String)
+  end
+  kernel_source
+end
+
 # get the directory of this file
 # (used for test runner)
 src_dir = dirname(Base.source_path())
@@ -23,20 +31,20 @@ WGS = -1
 NAME = ""
 
 if length(ARGS) < 1
-    info("Usage: julia pi_vocl.jl [num] (where num = 1, 4, or 8)")
+    @info("Usage: julia pi_vocl.jl [num] (where num = 1, 4, or 8)")
     exit(1)
 end
 vector_size = parse(Int, ARGS[1])
 
 if vector_size == 1
-        ITERS = 262144
-        WGS = 8
+    ITERS = 262144
+    WGS = 8
 elseif vector_size == 4
-        ITERS = 65536 # (262144/4)
-        WGS = 32
+    ITERS = 65536 # (262144/4)
+    WGS = 32
 elseif vector_size == 8
-        ITERS = 32768 # (262144/8)
-        WGS = 64
+    ITERS = 32768 # (262144/8)
+    WGS = 64
 else
     @warn("Invalid vector size")
     exit(1)
@@ -97,7 +105,7 @@ nsteps = work_group_size * niters * nwork_groups
 step_size = 1.0 / nsteps
 
 # vector to hold partial sum
-h_psum = Vector{Float32}(nwork_groups)
+h_psum = Vector{Float32}(undef, nwork_groups)
 
 println("$nwork_groups work groups of size $work_group_size.")
 println("$nsteps integration steps")
