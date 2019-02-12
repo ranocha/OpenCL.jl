@@ -56,7 +56,7 @@
 
             # test build by methods chaining
             @test prg[:build_status][device] == cl.CL_BUILD_SUCCESS
-            if device[:platform][:name] != "Intel(R) OpenCL"
+            if !occursin("Intel(R)", device[:platform][:name])
                 # The intel CPU driver is very verbose on Linux and output
                 # compilation status even without any warnings
                 @test isempty(strip(prg[:build_log][device]))
