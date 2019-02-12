@@ -22,8 +22,9 @@ install:
   - ps: iex ((new-object net.webclient).DownloadString("https://raw.githubusercontent.com/JuliaCI/Appveyor.jl/version-1/bin/install.ps1"))
 
 before_build:
-  - appveyor DownloadFile "http://registrationcenter-download.intel.com/akdlm/irc_nas/12512/opencl_runtime_16.1.2_x64_setup.msi"
-  - start /wait msiexec /i opencl_runtime_16.1.2_x64_setup.msi /qn  /l*v opencl_runtime.log
+  # old version: http://registrationcenter-download.intel.com/akdlm/irc_nas/12512/opencl_runtime_16.1.2_x64_setup.msi
+  - appveyor DownloadFile "http://registrationcenter-download.intel.com/akdlm/irc_nas/vcp/13794/opencl_runtime_18.1_x64_setup.msi"
+  - start /wait msiexec /i opencl_runtime_18.1_x64_setup.msi /qn  /l*v opencl_runtime.log
 
 build_script:
   - echo "%JL_BUILD_SCRIPT%"
